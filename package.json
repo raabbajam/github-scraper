@@ -1,0 +1,11 @@
+{
+  "name": "github-scraper",
+  "version": "1.0.0",
+  "description": "Github data scraper using api\\",
+  "main": "index.js",
+  "scripts": {
+    "test": "DEBUG=* mocha tests/**/*Spec.js"
+  },
+  "author": "Raabb Ajam",
+  "license": "ISC"
+}
