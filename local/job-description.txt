@@ -1,0 +1,37 @@
+I would like to get a list of github developers and information about them for academic research.
+
+I would like this information for a random sample of 4,000 developers who meet the following characteristics:
+1) Have a page with an email address
+2) Have made a contribution within the past month to a repository with over 2 other contributors
+3) Have made at least 10 contributions overall
+
+I would like a flat file (csv) with the following columns:
+Developer name
+Developer email address
+Join Date
+Web page
+developer id
+Country
+Contributions this year
+Contributions over all
+Contributions last month
+Pull requests last month
+Longest streak
+Current streak
+Number of repositories contributed to
+Followers
+Stars
+Following
+
+For each developer, I would like a row (repeating the information above in the first columns) for each repository they have contributed to in the last six months (up to 10 repos, if there are more, use only the ones with the largest numbers of contributors).  This row will include the following columns:
+
+Name of repository
+Description
+Start date
+Number of contributors to repository
+Number of commits  to repository
+Number of commits in last month  to repository
+Number of branches  to repository
+Number of releases  to repository
+Number of contributions from the developer in the last month
+Number of contributions from the developer overall

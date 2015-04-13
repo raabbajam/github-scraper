@@ -1,48 +1,38 @@
 var Promise = require('bluebird');
+var _ = require('highland');
 var debug = require('debug')('raabbajam:libs:sampler');
-var config = require('../local');
-var Github = require('github');
-var github = new Github({
-    version: "3.0.0",
-    headers: {
-        "user-agent": "University-of-Pennsylvania-Research", // GitHub is happy with a unique user agent
-    }
-});
-var credentials = {
-    type: "oauth",
-    token: config.github.token,
-};
-github.authenticate(credentials);
+var github = require('../services/github');
 var sampledPage = [];
 var init = false;
 var totalPage;
 var per_page = 100;
+
 function sampler() {
   return new Promise(function(resolve, reject) {
+    var since = getRandom();
+    var id = since + 1;
     var opts = {
-      q: 'repos:>15',
-      per_page: per_page,
-      page: 0//getRandomPage(),
+      since: since,
     };
-    github.search.users(opts, function (err, data) {
+    github.user.getAll(opts, function (err, data) {
       if (err) return reject(err);
-      sampledPage.push(opts.page);
-      debug('Taking sample users from page %s', opts.page || 0);
-      return resolve(data.items.map(function (item) {
+      sampledPage.push(id);
+      debug('Taking sample user with id %s', id);
+      return resolve(data.map(function (item) {
         return item.login;
-      }));
+      })[0]);
     });
   });
 }
 module.exports = sampler;
 
-function getRandomPage() {
-  var page;
+function getRandom() {
+  var number;
   debug('sampledPage :%s', sampledPage);
-  while(~(sampledPage.indexOf(page = (~~(Math.random() * 1000))))) { //get random page, check if already sampled, get another random page
-    debug('Checking page :%d', page);
+  while(~(sampledPage.indexOf(number = (~~(Math.random() * 1000))))) { //get random number, check if already sampled, get another random number
+    debug('Checking number :%d', number);
   }
-  debug('Page %d is not sampled', page);
-  debug('Return generate random page: %d', page);
-  return page;
+  debug('Page %d is not sampled', number);
+  debug('Return generate random number: %d', number);
+  return number;
 }

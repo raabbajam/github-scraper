@@ -1,0 +1,29 @@
+  Developer name
+  Developer email address
+  Join Date
+  Web page
+v developer id (users/:user)
+v Country (users/:user)
+  Contributions this year
+? Contributions over all (scrape http://stackoverflow.com/questions/21322778/how-do-i-get-a-list-of-all-the-github-projects-ive-contributed-to-in-the-last-y)
+  Contributions last month
+  Pull requests last month
+  Longest streak
+  Current streak
+? Number of repositories contributed to (Google Big Query http://stackoverflow.com/questions/20714593/github-api-repositories-contributed-to)
+  Followers
+  Stars
+  Following
+
+
+
+v Name of repository (github.repos.getFromUser)
+v Description (github.repos.getFromUser)
+v Start date (github.repos.getFromUser)
+  Number of contributors to repository
+  Number of commits  to repository
+  Number of commits in last month  to repository
+  Number of branches  to repository
+  Number of releases  to repository
+v Number of contributions from the developer in the last month (GET /repos/:owner/:repo/stats/contributors)
+v Number of contributions from the developer overall (GET /repos/:owner/:repo/stats/contributors)

@@ -1,18 +1,22 @@
 // get user sample
+var _ = require('highland');
 var sampler = require('./libs/sampler');
-var filterer = require('./libs/filterer');
-var scraper = require('./libs/scraper');
+// var getUserData = require('./libs/getUserData');
+// var filterer = require('./libs/filterer');
+var filterEmail = require('./libs/filterEmail');
+// var scraper = require('./libs/scraper');
 
 function init() {
   sampler()
-  .then(function (users) {
-    return filterer(users)
-  })
-  .then(function (users) {
-    return scraper(users)
-  })
-  .catch(function (err) {
-    debug('err', err.stack);
-    process.exit(1);
-  });
+    // .then(getData)
+    .then(filterEmail)
+    .then(filterContribution)
+    .then(function (user) {
+      console.log(user);
+      // addTask(user);
+    })
+    .catch(function (err) {
+      debug('err', err.stack);
+      process.exit(1);
+    });
 }
