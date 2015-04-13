@@ -16,7 +16,6 @@ v Country (users/:user)
   Following
 
 
-
 v Name of repository (github.repos.getFromUser)
 v Description (github.repos.getFromUser)
 v Start date (github.repos.getFromUser)

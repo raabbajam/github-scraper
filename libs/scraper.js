@@ -14,7 +14,6 @@ function getDataAndRepo(user) {
   return Promise.props({
     data: scrapeUserWebAndParse(user),
     repositories: getTopTenRepositories(user),
-    web: scrapeRepoWebAndParse(user),
   });
 }
 //done
@@ -31,6 +30,7 @@ function getData(user) {
 //done
 function getTopTenRepositories(user) {
   return getRepositories(user)
+    .then(getContributors)
     .then(getTopTen)
     .then(populateReposData);
 }
@@ -71,6 +71,7 @@ function getContributors(repos) {
         return resolve({
           repository: repoName,
           contributors: users.length,
+          user: user,
         });
       });
     });
@@ -80,9 +81,9 @@ function getContributors(repos) {
 //done
 function getTopTen(repos) {
   // debug(repos);
-  return _.pluck(_.sortBy(repos, function (repo) {
+  return _.sortBy(repos, function (repo) {
     return +repo.contributors || 0;
-  }), 'repository').reverse().slice(0, 10);
+  }).reverse().slice(0, 10);
 }
 //done
 function populateReposData(repos) {
@@ -90,9 +91,12 @@ function populateReposData(repos) {
 }
 //done
 function populateRepoData(repo) {
+  var repoName = repo.repository;
+  var user = repo.user;
   return Promise.props({
-    data: getRepoDataAndParse(repo),
-    web: scrapeRepoWebAndParse(repo),
+    data: getRepoDataAndParse(repoName),
+    userData: getUserRepoDataAndParse(repoName, user),
+    web: scrapeRepoWebAndParse(repoName),
   });
 }
 //done
@@ -122,6 +126,46 @@ function parseRepoJSON(json) {
     description: json.description,
     startDate: json.created_at,
   };
+}
+function getUserRepoDataAndParse(repoName, user) {
+  var splitted = repoName.split('/');
+  var owner = splitted[0];
+  var repo = splitted[1];
+  return new Promise(function(resolve, reject) {
+    github.repos.getStatsContributors({
+      user: owner,
+      repo: repo,
+    }, function (err, data) {
+      if (err) return reject(err);
+      var output = {
+        commitLastMonth: getCommitLastMonth(data),
+        userCommitLastMonth: getUserCommitLastMonth(data, user),
+        userCommitOverall: getUserCommitOverall(data),
+      };
+      return resolve(output);
+    });
+  });
+}
+function getCommitLastMonth(data) {
+  return data.reduce(function (all, user) {
+    return all + _.takeRight(user.weeks, 4).reduce(function (month, week) {
+      return month + week.c;
+    }, 0);
+  }, 0);
+}
+function getUserCommitLastMonth(data, user) {
+  return _.takeRight(_.find(data, function (row) {
+    return row.author.login === user;
+  }).weeks, 4).reduce(function (month, week) {
+    return month + week.c;
+  }, 0);
+}
+function getUserCommitOverall(data) {
+  return data.reduce(function (all, user) {
+    return all + user.weeks.reduce(function (month, week) {
+      return month + week.c;
+    }, 0);
+  }, 0);
 }
 //done
 function scrapeRepoWebAndParse(repo) {

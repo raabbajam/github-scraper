@@ -70,7 +70,17 @@ describe('Main process', function () {
           done(err);
         });
     });
-    it('should get user repositories', function (done) {
+    it('should get user repo data', function (done) {
+      scraper.getUserRepoDataAndParse('raabbajam/priceCacheCalendar', 'raabbajam')
+        .then(function (data) {
+          debug(data);
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+    it.skip('should get user repositories', function (done) {
       scraper.getRepositories('raabbajam')
         .then(scraper.getContributors)
         .then(scraper.getTopTen)
