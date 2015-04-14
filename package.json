@@ -10,7 +10,7 @@
     "pm2:sampler": "DEBUG=raabbajam:* pm2 start index.js",
     "pm2:filter": "DEBUG=raabbajam:* pm2 start filter.js",
     "log:filter": "DEBUG=raabbajam:* pm2 logs filter",
-    "s:all": "pssh -l root -o /tmp/out -h ./servers.txt",
+    "s:all": "pssh -l root -o /tmp/out -h ./servers.txt 'cd /node/apps/github-scraper &&'",
     "all:filter": "pssh -l root -o /tmp/out -h ./servers.txt 'pm2 restart filter'"
   },
   "author": "Raabb Ajam",
