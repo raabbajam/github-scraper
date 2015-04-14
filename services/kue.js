@@ -13,6 +13,7 @@ var kue = {
   addScraperTask: addScraperTask,
   addFilterTask: addFilterTask,
   processTask: processTask,
+  listen: listen,
 };
 function addTask(task, data) {
   return new Promise(function(resolve, reject) {
@@ -45,6 +46,9 @@ function addFilterTask(user) {
 }
 function processTask(task, concurrency, callback) {
   return queue.process(task, concurrency, callback);
+}
+function listen(port) {
+  Kue.app.listen(port);
 }
 module.exports = kue;
 

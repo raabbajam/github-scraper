@@ -4,7 +4,8 @@ var time = 30000;
 function rateLimit() {
   github.misc.rateLimit({}, function (err, msg) {
     if (!err) {
-      debug("\ncore: %j\nsearch: %j", msg.resources.core, msg.resources.search);      
+      debug("\ncore: %j\nsearch: %j", msg.resources.core, msg.resources.search);
+      if (!msg.resources.core.remaining) process.exit();
     }
     setTimeout(rateLimit, time);
   });
