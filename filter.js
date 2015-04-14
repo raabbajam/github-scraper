@@ -16,8 +16,8 @@ if (cluster.isMaster) {
     debug('Spawning %d / %d filter worker', i , clusterWorkerSize);
     cluster.fork();
   }
-} else {
   init();
+} else {
   kue.processTask('filter', concurrency, function (job, done) {
     var user = job.data.user;
     return filterEmail(user)
