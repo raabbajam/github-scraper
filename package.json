@@ -6,7 +6,10 @@
   "scripts": {
     "test": "DEBUG=raabbajam:* mocha tests/*Spec.js tests/**/*Spec.js",
     "start": "DEBUG=raabbajam:* node index.js",
-    "s:all": "alias s:all=\"pssh -l root -o /tmp/out -h ./servers.txt\""
+    "filter": "DEBUG=raabbajam:* node filter.js",
+    "pm2:filter": "DEBUG=raabbajam:* pm2 start filter.js",
+    "log:filter": "DEBUG=raabbajam:* pm2 logs filter",
+    "s:all": "pssh -l root -o /tmp/out -h ./servers.txt"
   },
   "author": "Raabb Ajam",
   "license": "ISC",

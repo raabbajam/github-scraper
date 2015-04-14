@@ -7,6 +7,7 @@ function filterEmail(users) {
     .then(isEmailPublic);
 }
 function getAllData(users) {
+  users = _.isArray(users) ? users : [users];
   return Promise.map(users, getData);
 }
 function getData(user) {
@@ -21,14 +22,14 @@ function getData(user) {
   });
 }
 function isEmailPublic(data) {
-  debug('Before filter: %d users', data.length);
+  // debug('Before filter: %d users', data.length);
   data = _.isArray(data) ? data : [data];
   data = data.filter(function (user) {
     return !!user.email;
   });
-  debug('After email filter: %d users', data.length);
+  // debug('After email filter: %d users', data.length);
   if (!data.length) {
-    debug('No email found. Stop filter. Move on!');
+    // debug('No email found. Stop filter. Move on!');
     return Promise.reject("No email found. Stop filter. Move on!");
   }
   data = data.map(function (user) {
