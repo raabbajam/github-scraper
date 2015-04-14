@@ -58,23 +58,32 @@ process.once( 'SIGTERM', function ( sig ) {
     process.exit( 0 );
   });
 });
-queue.on( 'error', function( err ) {
-  debug( 'Oops... ', err );
-});
 process.once( 'uncaughtException', function(err){
   var message = err.stack || err.message || err;
   debug( 'uncaughtException\nKue is shut down. ', message );
-  queue.shutdown( 1000, function(err2){
+  queue.shutdown(function(err2){
     var message2 = err.stack || err.message || err;
     debug( 'Kue is shut down. ', message2);
     process.exit( 0 );
   });
 });
+process.on('message', function(msg) {
+  if (msg == 'shutdown') {
+    console.log('Closing all connections...');
+    queue.shutdown(function(err2){
+      var message2 = err.stack || err.message || err;
+      debug( 'Kue is shut down. ', message2);
+      process.exit( 0 );
+    });
+  }
+});
+queue.on( 'error', function( err ) {
+  debug( 'Oops... ', err );
+});
 queue.active( function( err, ids ) {
   ids.forEach( function( id ) {
     Kue.Job.get( id, function( err, job ) {
-      // Your application should check if job is a stuck one
-      job.inactive();
+      if (job) job.inactive();
     });
   });
 });

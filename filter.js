@@ -11,7 +11,7 @@ var concurrency = 1;
 var cluster = require('cluster');
 var clusterWorkerSize = require('os').cpus().length;
 if (cluster.isMaster) {
-  kue.listen(1337);
+  // kue.listen(1337);
   for (var i = 0; i < clusterWorkerSize; i++) {
     debug('Spawning %d / %d filter worker', i , clusterWorkerSize);
     cluster.fork();
