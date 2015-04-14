@@ -1,7 +1,7 @@
-  Developer name
-  Developer email address
-  Join Date
-  Web page
+v Developer name
+v Developer email address
+v Join Date
+v Web page
 v developer id (users/:user)
 v Country (users/:user)
   Contributions this year
@@ -11,9 +11,9 @@ v Country (users/:user)
   Longest streak
   Current streak
 ? Number of repositories contributed to (Google Big Query http://stackoverflow.com/questions/20714593/github-api-repositories-contributed-to)
-  Followers
+v Followers
   Stars
-  Following
+v Following
 
 
 v Name of repository (github.repos.getFromUser)
@@ -21,7 +21,7 @@ v Description (github.repos.getFromUser)
 v Start date (github.repos.getFromUser)
   Number of contributors to repository
   Number of commits  to repository
-  Number of commits in last month  to repository
+v Number of commits in last month  to repository
   Number of branches  to repository
   Number of releases  to repository
 v Number of contributions from the developer in the last month (GET /repos/:owner/:repo/stats/contributors)

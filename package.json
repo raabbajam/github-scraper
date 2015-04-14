@@ -4,7 +4,8 @@
   "description": "Github data scraper using api\\",
   "main": "index.js",
   "scripts": {
-    "test": "DEBUG=raabbajam:* mocha tests/*Spec.js tests/**/*Spec.js"
+    "test": "DEBUG=raabbajam:* mocha tests/*Spec.js tests/**/*Spec.js",
+    "start": "DEBUG=raabbajam:* node index.js"
   },
   "author": "Raabb Ajam",
   "license": "ISC",

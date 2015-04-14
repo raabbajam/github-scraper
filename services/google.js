@@ -8,15 +8,17 @@ var jwtClient = new google.auth.JWT(
   null,
   ['https://www.googleapis.com/auth/bigquery']
 );
+var initialized = false;
 function init() {
   return new Promise(function(resolve, reject) {
+    if (initialized) return resolve();
     jwtClient.authorize(function (err, result) {
       if (err) return reject(err);
-      console.log('result', result);
       oauth2Client.setCredentials({
         access_token: result.access_token
       });
       google.options({auth:  oauth2Client});
+      initialized = true;
       return resolve();
     });
   });

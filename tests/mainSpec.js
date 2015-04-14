@@ -10,8 +10,8 @@ var filterEmail = require('../libs/filterEmail');
 var filterContribution = require('../libs/filterContribution');
 var loadModule = require('./module-loader').loadModule;
 var scraper = loadModule('../libs/scraper.js');
-describe('Main process', function () {
-  this.timeout(100000);
+describe.skip('Main process', function () {
+  this.timeout(300000);
   it.skip('should get sampler', function (done) {
     sampler()
       .then(function (user) {
@@ -42,7 +42,7 @@ describe('Main process', function () {
     it.skip('should get user data', function (done) {
       scraper.getData('raabbajam')
         .then(function (data) {
-          expect(data.login).to.eq('raabbajam');
+          expect(data.email).to.eq('raabbajam@gmail.com');
           done();
         })
         .catch(function (err) {
@@ -80,7 +80,7 @@ describe('Main process', function () {
           done(err);
         });
     });
-    it('should get user repositories', function (done) {
+    it.skip('should get user repositories', function (done) {
       scraper.getRepositories('raabbajam')
         .then(scraper.getContributors)
         .then(scraper.getTopTen)
@@ -92,6 +92,63 @@ describe('Main process', function () {
         })
         .catch(function (err) {
           debug(err.stack);
+          done(err);
+        });
+    });
+    it.skip('should get user web data', function (done) {
+      scraper.getWeb('raabbajam')
+        .then(function (data) {
+          expect(data.web.starred).to.gt(0);
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+    it.skip('should get repositories contributed count', function (done) {
+      scraper.getRepositoriesCount('raabbajam')
+        .then(function (data) {
+          expect(data).to.gt(1);
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+    it.skip('should get user month contribution', function (done) {
+      scraper.getMonthContribution('raabbajam', '2014-01-01')
+      .then(function (num) {
+        expect(num).to.eq(0);
+        return scraper.getMonthContribution('raabbajam', '2015-04-01');
+      })
+      .then(function (num) {
+        expect(num).to.gt(0);
+        done();
+      })
+      .catch(function (err) {
+        done(err);
+      });
+    });
+    it.skip('should get user overall contribution', function (done) {
+      scraper.getOverallContribution({username: 'raabbajam', joinDate: '2014-08-21T01:36:17Z'})
+        .then(function (user) {
+          debug(user.overallContributions);
+          expect(user.overallContributions).to.gt(0);
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
+    it('should get user and repo data', function (done) {
+      scraper.scraper('raabbajam')
+        .then(function (data) {
+          debug(data);
+          write(path.join(__dirname, 'json', 'all.json'), JSON.stringify(data, null, 2));
+          expect(data.repositories).to.exist;
+          done();
+        })
+        .catch(function (err) {
           done(err);
         });
     });

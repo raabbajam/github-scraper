@@ -1,13 +1,17 @@
 var Promise = require('bluebird');
 var debug = require('debug')('raabbajam:libs:filter-email');
+var _ = require('lodash');
 var github = require('../services/github');
-function filterEmail(user) {
-  return getData(user)
+function filterEmail(users) {
+  return getAllData(users)
     .then(isEmailPublic);
+}
+function getAllData(users) {
+  return Promise.map(users, getData);
 }
 function getData(user) {
   return new Promise(function(resolve, reject) {
-    debug('getdata',user);
+    // debug('getdata',user);
     github.user.getFrom({
       user: user,
     }, function (err, data) {
@@ -17,11 +21,19 @@ function getData(user) {
   });
 }
 function isEmailPublic(data) {
-  return new Promise(function(resolve, reject) {
-    if (!data.email) {
-      return reject(new Error('User email not found!' ));
-    }
-    return resolve(user);
+  debug('Before filter: %d users', data.length);
+  data = _.isArray(data) ? data : [data];
+  data = data.filter(function (user) {
+    return !!user.email;
   });
+  debug('After email filter: %d users', data.length);
+  if (!data.length) {
+    debug('No email found. Stop filter. Move on!');
+    return Promise.reject("No email found. Stop filter. Move on!");
+  }
+  data = data.map(function (user) {
+    return user.login;
+  });
+  return Promise.resolve(data);
 }
 module.exports = filterEmail;
