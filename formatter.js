@@ -11,7 +11,18 @@ function format() {
   return User.init()
     .then(User.all)
     .then(function (users) {
-      return Promise.map(users, User.get, {concurrent: concurrent});
+      var proms = users.map(function (user) {
+        return  User.get(user);
+      });
+      return Promise.settle(proms, {concurrent: concurrent})
+        .then(function (values) {
+          return values.filter(function (res) {
+            return res.isFulfilled();
+          })
+          .map(function (res) {
+            return res.value();
+          });
+        })
     })
     .then(flattenRepositories)
     .then(toCSV)
@@ -19,13 +30,18 @@ function format() {
 }
 
 function flattenRepositories(users) {
+  debug('before filter %d', users.length);
+  users = users.filter(function (user) {
+    if (!user.repositories) {
+      debug('!repoData', user);
+      return false;
+    }
+    return !!user.repositories;
+  });
+  debug('after filter %d', users.length);
   return users.reduce(function (all, user) {
     var userData = user;
     var repoData = user.repositories;
-    if (!repoData) {
-      debug('!repoData', user);
-      return all;
-    }
     delete userData.repositories;
     repoData = repoData.map(function (repo) {
       repo.repoName = repo.name;
@@ -36,7 +52,7 @@ function flattenRepositories(users) {
   }, []);
 }
 function toCSV(aoJSON) {
-  debug('aoJSON', aoJSON[0]);
+  // debug('aoJSON', aoJSON[0]);
   return new Promise(function(resolve, reject) {
     var options = {
       fields: getFields(),

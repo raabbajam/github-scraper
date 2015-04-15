@@ -17,26 +17,25 @@ var UserModel = nohm.model('User', {
     },
   }
 });
-function User(name, data) {
+function User(id, data) {
   return new Promise(function(resolve, reject) {
-    var user = nohm.factory('User');
-    user.p({
-      name: name,
-      data: data,
-    });
-    user.save(function (err) {
-      if (err) {
-        if (err === 'invalid') {
-          debug('properties were invalid: ', user.errors);
-          err = new Error('properties were invalid');
-          err.errors = user.errors;
-        } else {
-          debug(err); // database or unknown error
+    var user = nohm.factory('User', id, function (err) {
+      if (err) return reject(err);
+      user.p('data', data);
+      user.save(function (err) {
+        if (err) {
+          if (err === 'invalid') {
+            debug('properties were invalid: ', user.errors);
+            err = new Error('properties were invalid');
+            err.errors = user.errors;
+          } else {
+            debug(err); // database or unknown error
+          }
+          return reject(err);
         }
-        return reject(err);
-      }
-      debug('saved user! :-)');
-      return resolve();
+        debug('Saved user! :-)');
+        return resolve();
+      });
     });
   });
 }
@@ -49,14 +48,42 @@ function all() {
   });
 }
 function get(id) {
+  debug('getting %s',id);
   return new Promise(function(resolve, reject) {
     var user = nohm.factory('User', id, function (err) {
       if (err) return reject(err);
+      if (!user.p('data')) {
+        return User.destroy(id).then(function () {return resolve(0);});
+      }
       return resolve(user.p('data'));
     });
   });
 }
+function check(name) {
+  return new Promise(function(resolve, reject) {
+    var user = nohm.factory('User');
+    user.p({
+      name: name,
+    });
+    user.save(function (err) {
+      if (err) {
+        if (err === 'invalid') {
+          debug('properties were invalid: ', user.errors);
+          err = new Error('properties were invalid');
+          err.errors = user.errors;
+        } else {
+          debug(err); // database or unknown error
+        }
+        return reject(err);
+      }
+      debug('User not exist, created! :-)');
+      // debug(user);
+      return resolve(user.id);
+    });
+  });
+}
 function init() {
+  debug('User init..');
   return new Promise(function(resolve, reject) {
     if (initialized) return resolve();
     initialized = true;
@@ -66,7 +93,27 @@ function init() {
     });
   });
 }
+function destroyAll() {
+  debug('run destroy all!');
+  return User.all()
+    .map(User.destroy);
+}
+function destroy(id) {
+  debug('tryng to delete user %s', id);
+  return new Promise(function(resolve, reject) {
+    var user = nohm.factory('User');
+    user.id = id;
+    user.remove(function (err) {
+      if (err) return reject(err);
+      debug('delete user %s', id);
+      return resolve();
+    });
+  });
+}
 User.all = all;
 User.get = get;
+User.check = check;
+User.destroy = destroy;
+User.destroyAll = destroyAll;
 User.init = init;
 module.exports = User;

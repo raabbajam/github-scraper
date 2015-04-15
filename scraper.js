@@ -16,26 +16,35 @@ if (cluster.isMaster) {
   }
   init();
 } else {
-  kue.processTask('scraper', concurrency, function (job, done) {
-    var user = job.data.user;
-    return scraper(user)
-      .then(User.init)
-      .then(function (json) {
-        return User(user, json);
-      })
-      .then(function () {
-        debug('user %s is scraped', user);
-        done();
-      })
-      .catch(function (err) {
-        log(err);
-        if (err.message == 'properties were invalid') {
-          debug('user is scraped, but not unique, removing duplicate..', user);
-          return done();
-        }
-        debug('user %s is failed to scrape, will attempt again', user);
-        return done(err);
-      });
+  User.init()
+  .then(function () {
+    debug('user initialized');
+    kue.processTask('scraper', concurrency, function (job, done) {
+      var user = job.data.user;
+      debug('Start scraping user %s', user);
+      var id;
+      return User.check(user)
+        .then(function (_id) {
+          id = _id;
+          return scraper(user);
+        })
+        .then(function (json) {
+          return User(id, json);
+        })
+        .then(function () {
+          debug('user %s is scraped', user);
+          return done(null, user);
+        })
+        .catch(function (err) {
+          log(err);
+          if (err.message == 'properties were invalid') {
+            debug('user is scraped, but not unique, removing duplicate..', user);
+            return done(null, user);
+          }
+          debug('user %s is failed to scrape, will attempt again', user);
+          return done(err);
+        });
+    });
   });
 }
 function init() {

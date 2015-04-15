@@ -25,6 +25,10 @@ function getDataAndRepo(user) {
     data: getData(user),
     web: getWeb(user),
     repositories: getTopTenRepositories(user),
+  })
+  .then(function (val) {
+    debug('getDataAndRepo finished');
+    return val;
   });
 }
 function getWeb(user) {
@@ -115,7 +119,11 @@ function getTopTenRepositories(user) {
   return getRepositories(user)
     .then(getContributors)
     .then(getTopTen)
-    .then(populateReposData);
+    .then(populateReposData)
+    .then(function (val) {
+      debug('getTopTenRepositories finished');
+      return val;
+    });
 }
 //done
 function getRepositories(user) {
@@ -200,7 +208,12 @@ function getTopTen(repos) {
 }
 //done
 function populateReposData(repos) {
-  return Promise.map(repos, populateRepoData, {concurrency: concurrency});
+  debug('populateReposData %d', repos.length);
+  return Promise.map(repos, populateRepoData, {concurrency: concurrency})
+    .then(function (val) {
+      debug('populateReposData finished');
+      return val;
+    });
 }
 //done
 function populateRepoData(repo) {
@@ -211,6 +224,7 @@ function populateRepoData(repo) {
     userData: getUserRepoDataAndParse(repoName, user),
     web: scrapeRepoWebAndParse(repoName),
   }).then(function (repo) {
+    debug('merge after populateRepoData');
     return _.merge({}, repo.data, repo.userData, repo.web);
   });
 }
@@ -398,6 +412,7 @@ function ajaxHeaders(user) {
   };
 }
 function formatJSON(json) {
+  debug('formatJSON');
   var user = _.merge({}, json.data, json.web.web);
   user.repositories = json.repositories;
   return user;
