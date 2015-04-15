@@ -19,6 +19,7 @@ if (cluster.isMaster) {
   kue.processTask('scraper', concurrency, function (job, done) {
     var user = job.data.user;
     return scraper(user)
+      .then(User.init)
       .then(function (json) {
         return User(user, json);
       })

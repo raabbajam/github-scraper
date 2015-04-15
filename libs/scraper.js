@@ -10,7 +10,7 @@ var github = require('../services/github');
 var google = require('../services/google');
 var request = require('../services/request');
 var googleBigQuery = google.bigquery('v2');
-var concurrency = 8;
+var concurrency = 4;
 function scraper(user) {
   return getDataAndRepo(user)
     .then(formatJSON)
@@ -372,7 +372,6 @@ function scrape(url, headers, gzip) {
   };
   if (headers) options.headers = headers;
   if (gzip) options.gzip = gzip;
-  debug(url);
   return request(options);
 }
 //done

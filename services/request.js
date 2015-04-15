@@ -4,6 +4,7 @@ Promise.promisifyAll(request);
 function get(options) {
   return request.getAsync(options)
     .then(function (res) {
+      debug(options.url);      
       return res[1];
     });
 }
