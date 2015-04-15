@@ -372,7 +372,7 @@ function scrape(url, headers, gzip) {
   };
   if (headers) options.headers = headers;
   if (gzip) options.gzip = gzip;
-  // debug(url);
+  debug(url);
   return request(options);
 }
 //done
