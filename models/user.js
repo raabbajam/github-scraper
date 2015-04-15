@@ -2,7 +2,6 @@ var nohm = require('nohm').Nohm;
 var debug = require('debug')('raabbajam:models:user');
 var Promise = require('bluebird');
 var redisClient = require('./redisClient');
-nohm.setClient(redisClient);
 var UserModel = nohm.model('User', {
   properties: {
     name: {
@@ -56,6 +55,15 @@ function get(id) {
     });
   });
 }
+function init() {
+  return new Promise(function(resolve, reject) {
+    redisClient.on('ready', function () {
+      nohm.setClient(redisClient);
+      return resolve();
+    });
+  });
+}
 User.all = all;
 User.get = get;
+User.init = init;
 module.exports = User;

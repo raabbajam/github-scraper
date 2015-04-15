@@ -359,7 +359,7 @@ function parseUserWeb(html) {
   }
   function getContrib2(num) {
     var icon = num ? '.octicon-git-pull-request' : '.octicon-git-commit';
-    var iconEl = $(num, contrib2);
+    var iconEl = $(icon, contrib2);
     var isExist = !!iconEl.length;
     return isExist ? parseNumber(iconEl.next()) : 0;
   }
