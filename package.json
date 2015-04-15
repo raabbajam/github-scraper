@@ -4,14 +4,16 @@
   "description": "Github data scraper using api\\",
   "main": "index.js",
   "scripts": {
-    "test": "DEBUG=raabbajam:* mocha tests/*Spec.js tests/**/*Spec.js",
+    "test": "DEBUG=raabbajam:* CONFIG=test mocha tests/*Spec.js tests/**/*Spec.js",
     "start": "DEBUG=raabbajam:* node index.js",
     "filter": "DEBUG=raabbajam:* node filter.js",
+    "scraper": "DEBUG=raabbajam:* node scraper.js",
     "pm2:sampler": "DEBUG=raabbajam:* pm2 start index.js",
     "pm2:filter": "DEBUG=raabbajam:* pm2 start filter.js",
+    "pm2:scraper": "DEBUG=raabbajam:* pm2 start scraper.js",
     "log:filter": "DEBUG=raabbajam:* pm2 logs filter",
-    "s:all": "pssh -l root -o /tmp/out -h ./servers.txt 'cd /node/apps/github-scraper &&'",
-    "all:filter": "pssh -l root -o /tmp/out -h ./servers.txt 'pm2 restart filter'"
+    "s:all": "pssh -l root -o /tmp/out -h ./servers.txt",
+    "all:filter": "pssh -l root -o /tmp/out -h ./servers.txt 'pm2 reload filter'"
   },
   "author": "Raabb Ajam",
   "license": "ISC",
@@ -27,6 +29,7 @@
     "kue": "^0.8.12",
     "lodash": "^3.6.0",
     "moment": "^2.10.2",
+    "nohm": "^0.9.6",
     "readable-stream": "^1.0.33",
     "redis": "^0.12.1",
     "request": "^2.55.0"

@@ -10,7 +10,7 @@ var filterEmail = require('../libs/filterEmail');
 var filterContribution = require('../libs/filterContribution');
 var loadModule = require('./module-loader').loadModule;
 var scraper = loadModule('../libs/scraper.js');
-describe.skip('Main process', function () {
+describe('Main process', function () {
   this.timeout(300000);
   it.skip('should get sampler', function (done) {
     sampler()

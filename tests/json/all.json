@@ -8,12 +8,12 @@
   "followers": 7,
   "following": 7,
   "username": "raabbajam",
-  "overallContributions": 310,
-  "contributionYear": 310,
+  "overallContributions": 322,
+  "contributionYear": 322,
   "contributionMonth": 0,
   "pullRequestMonth": 0,
   "longestStreak": 10,
-  "currentStreak": 0,
+  "currentStreak": 3,
   "starred": 9,
   "repositoriesContributed": "15",
   "repositories": [
@@ -71,23 +71,11 @@
       "startDate": "2014-08-30T08:25:07Z",
       "commitLastMonth": 0,
       "userCommitLastMonth": 0,
-      "userCommitOverall": 5,
+      "userCommitOverall": 0,
       "contributors": 3,
       "commits": 6,
       "branches": 1,
       "releases": 0
-    },
-    {
-      "name": "paulomcnally/json-api-response",
-      "description": "API responses in JSON format",
-      "startDate": "2013-10-16T15:13:33Z",
-      "commitLastMonth": 0,
-      "userCommitLastMonth": 0,
-      "userCommitOverall": 12,
-      "contributors": 2,
-      "commits": 13,
-      "branches": 1,
-      "releases": 1
     },
     {
       "name": "raabbajam/urlto",
@@ -112,6 +100,18 @@
       "commits": 28,
       "branches": 1,
       "releases": 3
+    },
+    {
+      "name": "paulomcnally/json-api-response",
+      "description": "API responses in JSON format",
+      "startDate": "2013-10-16T15:13:33Z",
+      "commitLastMonth": 0,
+      "userCommitLastMonth": 0,
+      "userCommitOverall": 12,
+      "contributors": 2,
+      "commits": 13,
+      "branches": 1,
+      "releases": 1
     },
     {
       "name": "raabbajam/priceScraper",

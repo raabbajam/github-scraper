@@ -1,4 +1,4 @@
-var request = require('request');
+var request = require('request').defaults({pool: {maxSockets: Infinity}});
 var Promise = require('bluebird');
 Promise.promisifyAll(request);
 function get(options) {

@@ -10,13 +10,14 @@ var github = require('../services/github');
 var google = require('../services/google');
 var request = require('../services/request');
 var googleBigQuery = google.bigquery('v2');
+var concurrency = 8;
 function scraper(user) {
   return getDataAndRepo(user)
     .then(formatJSON)
     .catch(function (err) {
       // TODO log error
       debug('Error Main', err.stack);
-      return Promise.reject(err)
+      return Promise.reject(err);
     });
 }
 function getDataAndRepo(user) {
@@ -45,6 +46,7 @@ function getUserData(user) {
     github.user.getFrom({
       user: user,
     }, function (err, data) {
+      debug('github.user.getFrom');
       if (err) return reject(err);
       data = parseUserData(data);
       data.username = user;
@@ -77,7 +79,15 @@ function getOverallContribution(user) {
   months = months.map(function (month) {
     return getMonthContribution(user.username, month);
   });
-  return Promise.all(months)
+  return Promise.settle(months, {concurrency: concurrency})
+    .then(function (values) {
+      return values.filter(function (res) {
+        return res.isFulfilled();
+      })
+      .map(function (res) {
+        return res.value();
+      });
+    })
     .then(function (contributes) {
       var overallContributions = contributes.reduce(function (all, monthly) {
         return all + monthly;
@@ -120,6 +130,9 @@ function getRepositories(user) {
             },
           }, function (err, data) {
             if (err) return reject(err);
+            if (!data.rows) {
+              return reject(new Error('No data rows: ' + query));
+            }
             data = data.rows.map(function (row) {
               return row.f[0].v.replace('https://github.com/', '');
             });
@@ -158,6 +171,7 @@ function getContributors(repos) {
         user: user,
         repo: repo,
       }, function (err, users) {
+        debug('github.repos.getContributors %s', repoName);
         if (err) return reject(err);
         return resolve({
           repository: repoName,
@@ -167,7 +181,15 @@ function getContributors(repos) {
       });
     });
   });
-  return Promise.all(repos);
+  return Promise.settle(repos, {concurrency: concurrency})
+    .then(function (values) {
+      return values.filter(function (res) {
+        return res.isFulfilled();
+      })
+      .map(function (res) {
+        return res.value();
+      });
+    });
 }
 //done
 function getTopTen(repos) {
@@ -178,7 +200,7 @@ function getTopTen(repos) {
 }
 //done
 function populateReposData(repos) {
-  return Promise.map(repos, populateRepoData);
+  return Promise.map(repos, populateRepoData, {concurrency: concurrency});
 }
 //done
 function populateRepoData(repo) {
@@ -207,6 +229,7 @@ function getRepoData(repoName) {
       user: user,
       repo: repo,
     }, function (err, users) {
+      debug('github.repos.get');
       if (err) return reject(err);
       return resolve(users);
     });
@@ -231,6 +254,7 @@ function getUserRepoDataAndParse(repoName, user) {
       user: owner,
       repo: repo,
     }, function (err, data) {
+      debug('github.repos.getStatsContributors');
       if (err) return reject(err);
       var output = {
         commitLastMonth: getCommitLastMonth(data),
@@ -348,7 +372,7 @@ function scrape(url, headers, gzip) {
   };
   if (headers) options.headers = headers;
   if (gzip) options.gzip = gzip;
-  console.log(url);
+  // debug(url);
   return request(options);
 }
 //done

@@ -22,7 +22,8 @@ function addTask(task, data) {
     .attempts(5)
     .on('complete', function (result) {
       return;
-    }).on('failed attempt', function (err, done) {
+    }).on('failed attempt', function (err, times) {
+      debug('Failed attempt %d times, will try again', times, err);
       return reject(err);
     }).on('failed', function (err) {
       return reject(err);

@@ -1,4 +1,4 @@
-// get user sample
+// filter user sample
 var debug = require('debug')('raabbajam:filter');
 var Promise = require('bluebird');
 var sampler = require('./libs/sampler');

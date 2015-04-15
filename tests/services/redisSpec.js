@@ -1,7 +1,7 @@
 var redis = require('../../services/redis');
 var expect = require('chai').expect;
 redis.setPrefix('test');
-describe('Redis service', function () {
+describe.skip('Redis service', function () {
   this.timeout(30000);
   it('should get succeed count', function (done) {
     redis.incrSucceedCount()
