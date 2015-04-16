@@ -46,8 +46,10 @@ if (cluster.isMaster) {
         })
         .catch(function (err) {
           log(err);
-          if (err.message == 'properties were invalid') {
-            debug('user is scraped, but not unique, removing duplicate..', user);
+          var msg = err.message || err;
+          if (/No data rows|properties were invalid/.test(msg)) {
+            debug('Skip this user %s, Cause: %s', user, msg);
+            // debug('user is scraped, but not unique, removing duplicate..', user);
             return done(null, user);
           }
           debug('user %s is failed to scrape, will attempt again', user);
@@ -62,7 +64,7 @@ function init() {
 function log(err) {
   var message = err.stack || err.message || err;
   debug('Error final', message);
-  if (/Quota exceeded|No data rows/i.test(message)) {
+  if (/Quota exceeded/i.test(message)) {
     debug('Ugh! Quota exceeded Error!');
     if (cluster.isMaster) process.exit(0);
     debug('Not in master! Disconnect!');
