@@ -62,7 +62,7 @@ function get(id, keep) {
 }
 function check(name) {
   return new Promise(function(resolve, reject) {
-    if (name == 'undefined') return reject(new Error('skip me'));
+    if (name === undefined) return reject(new Error('skip me'));
     var user = nohm.factory('User');
     user.p({
       name: name,
