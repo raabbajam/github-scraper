@@ -52,7 +52,7 @@ function get(id, keep) {
   debug('getting %s',id);
   return new Promise(function(resolve, reject) {
     var user = nohm.factory('User', id, function (err) {
-      if (err) return reject(err);
+      if (err) return reject(new Error('skip me'));
       if (!keep && !user.p('data')) {
         return User.destroy(id).then(function () {return resolve(0);});
       }
@@ -85,11 +85,14 @@ function check(name) {
                 err = new Error('properties were invalid');
                 err.errors = user.errors;
                 return reject(err);
+              })
+              .catch(function (err) {
+                return reject(new Error('skip me'));
               });
           });
         } else {
           debug(err); // database or unknown error
-          return reject(err);
+          return reject(new Error('skip me'));
         }
       } else {
         debug('User not exist, created! :-)');
