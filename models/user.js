@@ -68,13 +68,27 @@ function check(name) {
     user.save(function (err) {
       if (err) {
         if (err === 'invalid') {
-          debug('properties were invalid: ', user.errors);
-          err = new Error('properties were invalid');
-          err.errors = user.errors;
+          debug('properties were invalid: %s, tryng to check possible empty..', user.errors);
+          UserModel.find({name: name}, function (err, ids) {
+            if (err) return reject(err);
+            debug(ids);
+            var id = ids[0] ? ids[0] : ids;
+            get(id)
+              .then(function (data) {
+                if (!data) {
+                  debug('no data: "%s", return this id..', data);
+                  return resolve(id);
+                }
+                debug('have data %s, reject as duplicate', data);
+                err = new Error('properties were invalid');
+                err.errors = user.errors;
+                return reject(err);
+              });
+          });
         } else {
           debug(err); // database or unknown error
+          return reject(err);
         }
-        return reject(err);
       }
       debug('User not exist, created! :-)');
       // debug(user);

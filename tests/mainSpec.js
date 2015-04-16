@@ -141,7 +141,7 @@ describe('Main process', function () {
         });
     });
     it('should get user and repo data', function (done) {
-      scraper.scraper('raabbajam')
+      scraper.scraper('pkittenis')
         .then(function (data) {
           debug(data);
           write(path.join(__dirname, 'json', 'all.json'), JSON.stringify(data, null, 2));

@@ -10,7 +10,7 @@ var github = require('../services/github');
 var google = require('../services/google');
 var request = require('../services/request');
 var googleBigQuery = google.bigquery('v2');
-var concurrency = 4;
+var concurrency = 10;
 function scraper(user) {
   return getDataAndRepo(user)
     .then(formatJSON)
@@ -119,7 +119,9 @@ function getTopTenRepositories(user) {
   return getRepositories(user)
     .then(getContributors)
     .then(getTopTen)
-    .then(populateReposData)
+    .then(function (repos) {
+      return populateReposData(repos, user);
+    })
     .then(function (val) {
       debug('getTopTenRepositories finished');
       return val;
@@ -207,18 +209,28 @@ function getTopTen(repos) {
   }).reverse().slice(0, 10);
 }
 //done
-function populateReposData(repos) {
+function populateReposData(repos, user) {
   debug('populateReposData %d', repos.length);
-  return Promise.map(repos, populateRepoData, {concurrency: concurrency})
-    .then(function (val) {
-      debug('populateReposData finished');
-      return val;
+  repos = repos.map(function (repo) {
+    return populateRepoData(repo, user);
+  });
+  return Promise.settle(repos, {concurrency: concurrency})
+    .then(function (values) {
+      debug('POPULATEREPOSDATA FINISH');
+      return values.filter(function (res) {
+        return res.isFulfilled();
+      })
+      .map(function (res) {
+        return res.value();
+      });
+    })
+    .catch(function (err) {
+      throw(err);
     });
 }
 //done
-function populateRepoData(repo) {
+function populateRepoData(repo, user) {
   var repoName = repo.repository;
-  var user = repo.user;
   return Promise.props({
     data: getRepoDataAndParse(repoName),
     userData: getUserRepoDataAndParse(repoName, user),
@@ -231,7 +243,11 @@ function populateRepoData(repo) {
 //done
 function getRepoDataAndParse(repoName) {
   return getRepoData(repoName)
-    .then(parseRepoJSON);
+    .then(parseRepoJSON)
+    .then(function (value) {
+      debug('finish getRepoDataAndParse!!!!');
+      return value;
+    });
 }
 //done
 function getRepoData(repoName) {
@@ -275,6 +291,7 @@ function getUserRepoDataAndParse(repoName, user) {
         userCommitLastMonth: getUserCommitLastMonth(data, user),
         userCommitOverall: getUserCommitOverall(data),
       };
+      debug('finish getUserRepoDataAndParse');
       return resolve(output);
     });
   });
@@ -326,6 +343,7 @@ function scrapeRepoWebAndParse(repo) {
   return scrape(repo)
     .then(parseRepoWeb)
     .then(function (json) {
+      debug('finish scrapeRepoWebAndParse');
       return checkContributors(json, repo);
     });
 }
@@ -341,13 +359,20 @@ function parseRepoWeb(html) {
   });
 }
 function checkContributors(json, repos) {
-  if (json.contributors > 0) return Promise.resolve(json);
-  var url = repos + '/contributors_size';
-  return scrape(url)
-    .then(function (html) {
-      json.contributors = +html.replace(/\D/g, '');
-      return json;
-    });
+  return new Promise(function(resolve, reject) {
+    debug('checkContributors %s', repos);
+    if (json.contributors > 0) return resolve(json);
+    debug('json.contributors is %d < 0', json.contributors);
+    var url = repos + '/contributors_size';
+    scrape(url)
+      .then(function (html) {
+        json.contributors = +html.replace(/\D/g, '');
+        return resolve(json);
+      })
+      .catch(function (err) {
+        return reject(err);
+      });
+  });
 }
 //done
 function scrapeUserWebAndParse(user) {

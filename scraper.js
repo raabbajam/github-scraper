@@ -1,5 +1,6 @@
 // scrape user sample
-var debug = require('debug')('raabbajam:scrape');
+var debugFn = require('debug');
+var debug;
 var Promise = require('bluebird');
 var scraper = require('./libs/scraper');
 var rateLimit = require('./libs/rateLimit');
@@ -10,12 +11,18 @@ var cluster = require('cluster');
 // var clusterWorkerSize = require('os').cpus().length;
 var clusterWorkerSize = 1;
 if (cluster.isMaster) {
+  debug = debugFn('raabbajam:scrape:master');
   for (var i = 0; i < clusterWorkerSize; i++) {
     debug('Spawning %d / %d scraper worker', i , clusterWorkerSize);
     cluster.fork();
   }
+  cluster.on('disconnect', function(worker) {
+    debug('A worker has disconnected! EXIT!');
+    process.exit(0);
+  });
   init();
 } else {
+  debug = debugFn('raabbajam:scrape:worker');
   User.init()
   .then(function () {
     debug('user initialized');
@@ -26,9 +33,11 @@ if (cluster.isMaster) {
       return User.check(user)
         .then(function (_id) {
           id = _id;
+          debug('Got id %s for this user %s', id, user);
           return scraper(user);
         })
         .then(function (json) {
+          debug('Got json and id for this user %s, %s, %j', user, id, json);
           return User(id, json);
         })
         .then(function () {
@@ -53,6 +62,13 @@ function init() {
 function log(err) {
   var message = err.stack || err.message || err;
   debug('Error final', message);
+  if (/Quota exceeded|No data rows/i.test(message)) {
+    debug('Ugh! Quota exceeded Error!');
+    if (cluster.isMaster) process.exit(0);
+    debug('Not in master! Disconnect!');
+    cluster.worker.disconnect();
+    process.exit(0);
+  }
 }
 function addScraperTask(users) {
   users.forEach(function (user) {
