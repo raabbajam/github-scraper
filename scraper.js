@@ -47,7 +47,7 @@ if (cluster.isMaster) {
         .catch(function (err) {
           log(err);
           var msg = err.message || err;
-          if (/No data rows|properties were invalid/.test(msg)) {
+          if (/skip me|No data rows|properties were invalid/.test(msg)) {
             debug('Skip this user %s, Cause: %s', user, msg);
             // debug('user is scraped, but not unique, removing duplicate..', user);
             return done(null, user);
