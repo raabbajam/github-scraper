@@ -12,7 +12,10 @@ var request = require('../services/request');
 var googleBigQuery = google.bigquery('v2');
 var concurrency = 10;
 function scraper(user) {
-  return getDataAndRepo(user)
+  return request.init()
+    .then(function (value) {
+      return getDataAndRepo(user);
+    })
     .then(formatJSON)
     .catch(function (err) {
       // TODO log error
@@ -24,7 +27,6 @@ function getDataAndRepo(user) {
   return Promise.props({
     data: getData(user),
     web: getWeb(user),
-    repositories: getTopTenRepositories(user),
   })
   .then(function (val) {
     debug('getDataAndRepo finished');
@@ -34,16 +36,15 @@ function getDataAndRepo(user) {
 function getWeb(user) {
   return Promise.props({
     web: scrapeUserWebAndParse(user),
-    repositoriesContributed: getRepositoriesCount(user),
-  }).then(function (user) {
-    user.web.repositoriesContributed = user.repositoriesContributed;
-    return user;
   });
 }
 //done
 function getData(user) {
   return getUserData(user)
-    .then(getOverallContribution);
+    .then(getOverallData)
+    .then(addPullRequestRepo)
+    .then(addIssueRepo)
+    .then(getTopTenRepositories);
 }
 function getUserData(user) {
   return new Promise(function(resolve, reject) {
@@ -71,7 +72,7 @@ function parseUserData(json) {
     following: json.following,
   };
 }
-function getOverallContribution(user) {
+function getOverallData(user) {
   var joinDate = moment(user.joinDate, inputFormat);
   var now = moment();
   var months = [];
@@ -94,9 +95,14 @@ function getOverallContribution(user) {
     })
     .then(function (contributes) {
       var overallContributions = contributes.reduce(function (all, monthly) {
-        return all + monthly;
+        return all + monthly.contribution;
       }, 0);
+      var allRepositories = _.unique(contributes.reduce(function (all, monthly) {
+        return all.concat(monthly.repositories);
+      }, []));
       user.overallContributions = overallContributions;
+      user.repositories = allRepositories;
+      user.repositoriesContributed = allRepositories.length;
       return user;
     });
 }
@@ -105,32 +111,80 @@ function getMonthContribution(user, month) {
   var url = user + '?tab=contributions&from=' + month + '&to=' + now + '&_pjax=.js-contribution-activity';
   var headers = ajaxHeaders(user);
   return scrape(url, headers, true)
-    .then(function (html) {
-      var $ = cheerio.load(html);
-      var contrib = $('.conversation-list-heading');
-      if (!contrib.length) return 0;
-      var iconEl = $('.octicon-git-commit', contrib);
-      var isExist = !!iconEl.length;
-      return isExist ? parseNumber(iconEl.next()) : 0;
+    .then(parseMonthly);
+}
+function parseMonthly(html) {
+  var $ = cheerio.load(html);
+  return {
+    contribution: getContribution(),
+    repositories: getRepositories(),
+  };
+  function getContribution() {
+    var contrib = $('.conversation-list-heading');
+    if (!contrib.length) return 0;
+    var iconEl = $('.octicon-git-commit', contrib);
+    var isExist = !!iconEl.length;
+    return isExist ? parseNumber(iconEl.next()) : 0;
+  }
+  function getRepositories() {
+    return _.map($('ul.simple-conversation-list a, ol.simple-conversation-list .cmeta a'), function (a) {
+      return $(a).text().match(/[\w\-]+\/[\w\-]+/)[0];
     });
+  }
+}
+function addPullRequestRepo(user) {
+  return getPullRequestRepo(user.username)
+    .then(parsePullRequestRepo)
+    .then(function (repos) {
+      debug('pull request repo %s', repos);
+      user.repositories = _.unique(user.repositories.concat(repos));
+      return user;
+    });
+}
+function getPullRequestRepo(user) {
+  return scrape('pulls?utf8=%E2%9C%93&q=is%3Apr+author%3A' + user, null, null, true);
+}
+function parsePullRequestRepo(html) {
+  var $ = cheerio.load(html);
+  return _.map($('a.issue-title-link.issue-nwo-link'), function (a) {
+    return $(a).text().trim();
+  });
+}
+function addIssueRepo(user) {
+  return getIssueRepo(user.username)
+    .then(parseIssueRepo)
+    .then(function (repos) {
+      debug('issue repo %s', repos);
+      user.repositories = _.unique(user.repositories.concat(repos));
+      return user;
+    });
+}
+function getIssueRepo(user) {
+  return scrape('issues?utf8=%E2%9C%93&q=is%3Apr+author%3A' + user, null, null, true);
+}
+function parseIssueRepo(html) {
+  var $ = cheerio.load(html);
+  return _.map($('a.issue-title-link.issue-nwo-link'), function (a) {
+    return $(a).text().trim();
+  });
 }
 //done
 function getTopTenRepositories(user) {
-  return getRepositories(user)
-    .then(getContributors)
+  return getContributors(user.repositories)
     .then(getTopTen)
     .then(function (repos) {
       return populateReposData(repos, user);
     })
-    .then(function (val) {
+    .then(function (repos) {
+      user.repositories = repos;
       debug('getTopTenRepositories finished');
-      return val;
+      return user;
     });
 }
 //done
 function getRepositories(user) {
   return new Promise(function(resolve, reject) {
-    var query = "SELECT repository_url \nFROM [githubarchive:github.timeline]\nWHERE payload_pull_request_user_login ='" + user + "' or repository_owner ='" + user + "'\nGROUP BY repository_url;";
+    /*var query = "SELECT repository_url \nFROM [githubarchive:github.timeline]\nWHERE payload_pull_request_user_login ='" + user + "' or repository_owner ='" + user + "'\nGROUP BY repository_url;";
     google.raInit()
       .then(function () {
         googleBigQuery.jobs.query({
@@ -148,7 +202,8 @@ function getRepositories(user) {
             });
             return resolve(data);
           });
-      });
+      });*/
+
   });
 }
 //done
@@ -233,7 +288,7 @@ function populateRepoData(repo, user) {
   var repoName = repo.repository;
   return Promise.props({
     data: getRepoDataAndParse(repoName),
-    userData: getUserRepoDataAndParse(repoName, user),
+    userData: getUserRepoDataAndParse(repoName, user.username),
     web: scrapeRepoWebAndParse(repoName),
   }).then(function (repo) {
     debug('merge after populateRepoData');
@@ -404,13 +459,14 @@ function parseUserWeb(html) {
   }
 }
 //done
-function scrape(url, headers, gzip) {
+function scrape(url, headers, gzip, jar) {
   url = 'https://github.com/' + url;
   var options = {
     url: url,
   };
   if (headers) options.headers = headers;
   if (gzip) options.gzip = gzip;
+  if (jar) options.jar = jar;
   return request(options);
 }
 //done
@@ -439,7 +495,7 @@ function ajaxHeaders(user) {
 function formatJSON(json) {
   debug('formatJSON');
   var user = _.merge({}, json.data, json.web.web);
-  user.repositories = json.repositories;
+  // user.repositories = json.repositories;
   return user;
 }
 module.exports = scraper;

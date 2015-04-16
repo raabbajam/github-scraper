@@ -140,8 +140,41 @@ describe('Main process', function () {
           done(err);
         });
     });
+    it.skip('should get repositories data', function (done) {
+      var html = read(path.join(__dirname, 'html', 'contributionMonth.html'));
+      var json = scraper.parseMonthly(html);
+      debug(json);
+      expect(json.repositories.length).to.gt(0);
+      expect(json.contribution).to.gt(0);
+      done();
+    });
+    it.skip('should get pull request data', function (done) {
+      var html = read(path.join(__dirname, 'html', 'pull.html'));
+      var repositories = scraper.parsePullRequestRepo(html);
+      debug(repositories);
+      expect(repositories.length).to.gt(0);
+      done();
+    });
+    it.skip('should init request service', function (done) {
+      scraper.getPullRequestRepo('raabbajam')
+        .then(function (html) {
+          var repositories = scraper.parsePullRequestRepo(html);
+          debug(repositories);
+          expect(repositories.length).to.gt(0);
+          return scraper.getPullRequestRepo('agusnurwanto');
+        })
+        .then(function (html) {
+          var repositories = scraper.parsePullRequestRepo(html);
+          debug(repositories);
+          expect(repositories.length).to.gt(0);
+          done();
+        })
+        .catch(function (err) {
+          done(err);
+        });
+    });
     it('should get user and repo data', function (done) {
-      scraper.scraper('pkittenis')
+      scraper.scraper('raabbajam')
         .then(function (data) {
           debug(data);
           write(path.join(__dirname, 'json', 'all.json'), JSON.stringify(data, null, 2));
