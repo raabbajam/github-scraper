@@ -7,6 +7,7 @@ var UserModel = nohm.model('User', {
   properties: {
     name: {
       type: 'string',
+      index: true,
       unique: true,
       validations: [
         'notEmpty'
@@ -68,7 +69,7 @@ function check(name) {
     user.save(function (err) {
       if (err) {
         if (err === 'invalid') {
-          debug('properties were invalid: %s, tryng to check possible empty..', user.errors);
+          debug('properties were invalid: %j, tryng to check possible empty..', user.errors);
           UserModel.find({name: name}, function (err, ids) {
             if (err) return reject(err);
             debug(ids);
@@ -79,7 +80,7 @@ function check(name) {
                   debug('no data: "%s", return this id..', data);
                   return resolve(id);
                 }
-                debug('have data %s, reject as duplicate', data);
+                debug('have data %j, reject as duplicate', data);
                 err = new Error('properties were invalid');
                 err.errors = user.errors;
                 return reject(err);
@@ -89,10 +90,11 @@ function check(name) {
           debug(err); // database or unknown error
           return reject(err);
         }
+      } else {
+        debug('User not exist, created! :-)');
+        // debug(user);
+        return resolve(user.id);
       }
-      debug('User not exist, created! :-)');
-      // debug(user);
-      return resolve(user.id);
     });
   });
 }
