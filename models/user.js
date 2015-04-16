@@ -48,12 +48,12 @@ function all() {
     });
   });
 }
-function get(id) {
+function get(id, keep) {
   debug('getting %s',id);
   return new Promise(function(resolve, reject) {
     var user = nohm.factory('User', id, function (err) {
       if (err) return reject(err);
-      if (!user.p('data')) {
+      if (!keep && !user.p('data')) {
         return User.destroy(id).then(function () {return resolve(0);});
       }
       return resolve(user.p('data'));
@@ -74,7 +74,7 @@ function check(name) {
             if (err) return reject(err);
             debug(ids);
             var id = ids[0] ? ids[0] : ids;
-            get(id)
+            get(id, true)
               .then(function (data) {
                 if (!data) {
                   debug('no data: "%s", return this id..', data);
