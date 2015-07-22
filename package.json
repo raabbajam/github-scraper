@@ -4,7 +4,7 @@
   "description": "Github data scraper using api\\",
   "main": "index.js",
   "scripts": {
-    "test": "DEBUG=raabbajam:* CONFIG=test mocha tests/*Spec.js tests/**/*Spec.js",
+    "test": "DEBUG=raabbajam:* CONFIG=test mocha -w tests/*Spec.js tests/**/*Spec.js",
     "start": "DEBUG=raabbajam:* node index.js",
     "filter": "DEBUG=raabbajam:* node filter.js",
     "scraper": "DEBUG=raabbajam:* node scraper.js",

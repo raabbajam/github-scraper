@@ -7,9 +7,7 @@ var outputFormat = 'YYYY-MM-DD';
 var debug = require('debug')('raabbajam:libs:scraper');
 var config = require('../local');
 var github = require('../services/github');
-var google = require('../services/google');
 var request = require('../services/request');
-var googleBigQuery = google.bigquery('v2');
 var concurrency = 10;
 function scraper(user) {
   return request.init()
@@ -180,49 +178,6 @@ function getTopTenRepositories(user) {
       debug('getTopTenRepositories finished');
       return user;
     });
-}
-//done
-function getRepositories(user) {
-  return new Promise(function(resolve, reject) {
-    /*var query = "SELECT repository_url \nFROM [githubarchive:github.timeline]\nWHERE payload_pull_request_user_login ='" + user + "' or repository_owner ='" + user + "'\nGROUP BY repository_url;";
-    google.raInit()
-      .then(function () {
-        googleBigQuery.jobs.query({
-            projectId: config.google.projectId,
-            resource: {
-              query: query,
-            },
-          }, function (err, data) {
-            if (err) return reject(err);
-            if (!data.rows) {
-              return reject(new Error('No data rows: ' + query));
-            }
-            data = data.rows.map(function (row) {
-              return row.f[0].v.replace('https://github.com/', '');
-            });
-            return resolve(data);
-          });
-      });*/
-
-  });
-}
-//done
-function getRepositoriesCount(user) {
-  return new Promise(function(resolve, reject) {
-    var query = "SELECT COUNT(DISTINCT repository_url) AS count_repositories_contributed_to FROM [githubarchive:github.timeline] WHERE payload_pull_request_user_login ='" + user + "' or repository_owner = '" + user + "';";
-    google.raInit()
-      .then(function () {
-        googleBigQuery.jobs.query({
-            projectId: config.google.projectId,
-            resource: {
-              query: query,
-            },
-          }, function (err, data) {
-            if (err) return reject(err);
-            return resolve(data.rows[0].f[0].v);
-          });
-      });
-  });
 }
 //done
 function getContributors(repos) {
@@ -498,4 +453,6 @@ function formatJSON(json) {
   // user.repositories = json.repositories;
   return user;
 }
+scraper.getUserRepoDataAndParse = getUserRepoDataAndParse;
+scraper.getMonthContribution = getMonthContribution;
 module.exports = scraper;

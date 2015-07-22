@@ -9,7 +9,7 @@ var redis = require('./services/redis');
 var kue = require('./services/kue');
 var succeed;
 var sampled;
-var target = 800000;
+var target = 450000;
 function init() {
   // query count number user succeed save in variable
   redis.initKey();
