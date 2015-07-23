@@ -14,8 +14,8 @@
     "pm2:filter": "DEBUG=raabbajam:* pm2 start filter.js",
     "pm2:scraper": "DEBUG=raabbajam:* pm2 start scraper.js",
     "log:filter": "DEBUG=raabbajam:* pm2 logs filter",
-    "s:all": "pssh -l root -o /tmp/out -h ./servers.txt",
-    "all:filter": "pssh -l root -o /tmp/out -h ./servers.txt 'pm2 reload filter'"
+    "s:all": "sshp -l root -f ./servers.txt",
+    "all:filter": "sshp -l root -f ./servers.txt 'pm2 reload filter'"
   },
   "author": "Raabb Ajam",
   "license": "ISC",

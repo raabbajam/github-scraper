@@ -7,7 +7,7 @@ var filterEmail = require('./libs/filterEmail');
 var filterContribution = require('./libs/filterContribution');
 var redis = require('./services/redis');
 var kue = require('./services/kue');
-var concurrency = 1;
+var concurrency = 7;
 var cluster = require('cluster');
 var clusterWorkerSize = require('os').cpus().length;
 if (cluster.isMaster) {
