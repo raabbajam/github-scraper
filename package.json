@@ -10,9 +10,9 @@
     "scraper": "DEBUG=raabbajam:* node scraper.js",
     "formatter": "DEBUG=raabbajam:* node formatter.js",
     "restarter": "DEBUG=raabbajam:* node restart.js",
-    "pm2:sampler": "DEBUG=raabbajam:* pm2 start index.js",
-    "pm2:filter": "DEBUG=raabbajam:* pm2 start filter.js",
-    "pm2:scraper": "DEBUG=raabbajam:* pm2 start scraper.js",
+    "pm2:sampler": "DEBUG=raabbajam:* pm2 start index.js --no-autorestart -c '*/30 * * * *'",
+    "pm2:filter": "DEBUG=raabbajam:* pm2 start filter.js --no-autorestart -c '*/30 * * * *'",
+    "pm2:scraper": "DEBUG=raabbajam:* pm2 start scraper.js --no-autorestart -c '*/30 * * * *'",
     "log:filter": "DEBUG=raabbajam:* pm2 logs filter",
     "s:all": "sshp -l root -f ./servers.txt",
     "all:filter": "sshp -l root -f ./servers.txt 'pm2 reload filter'"
