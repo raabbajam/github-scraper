@@ -2,7 +2,6 @@ var github = require('../services/github');
 var debug = require('debug')('raabbajam:rate-limit');
 var time = 30 * 1000;
 function rateLimit() {
-	setTimeout(function(){
   github.misc.rateLimit({}, function (err, msg) {
     if (!err) {
       debug("\ncore: %j\nsearch: %j", msg.resources.core, msg.resources.search);
@@ -11,8 +10,7 @@ function rateLimit() {
         process.exit(0);
       }
     }
-    rateLimit();
+    setTimeout(rateLimit, time);
   });
-  }, time);
 }
 module.exports = rateLimit;
