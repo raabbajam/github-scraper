@@ -1,6 +1,6 @@
 var github = require('../services/github');
 var debug = require('debug')('raabbajam:rate-limit');
-var time = 30000;
+var time = 5 * 60 * 1000;
 function rateLimit() {
   github.misc.rateLimit({}, function (err, msg) {
     if (!err) {
